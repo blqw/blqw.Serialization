@@ -33,6 +33,11 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            if (serializationStream.ReadByte() == 0)
+            {
+                TraceDeserialize.WriteValue(null);
+                return null;
+            }
             if (_Formatter == null)
             {
                 _Formatter = new BinaryFormatter();
@@ -46,6 +51,13 @@ namespace blqw.Serialization.Formatters
 
         public override void Serialize(Stream serializationStream, object graph)
         {
+            if (graph == null)
+            {
+                serializationStream.WriteByte(0); //表示null
+                return;
+            }
+            serializationStream.WriteByte(1); //表示有值
+
             if (_Formatter == null)
             {
                 _Formatter = new BinaryFormatter();

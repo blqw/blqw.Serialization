@@ -13,7 +13,6 @@ namespace blqw
     {
         static void Main(string[] args)
         {
-
             object obj;
             try
             {

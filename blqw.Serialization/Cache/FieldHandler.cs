@@ -18,7 +18,7 @@ namespace blqw.Serialization
             Field = field;
             Name = field.Name;
             FieldType = field.FieldType;
-            if (Component. GetGeter != null && Component.GetSeter != null)
+            if (Component.GetGeter != null && Component.GetSeter != null)
             {
                 GetValue = Component.GetGeter(field);
                 SetValue = Component.GetSeter(field);
@@ -33,7 +33,11 @@ namespace blqw.Serialization
                 GetValue = get.Compile();
             }
 
-            if (field.IsLiteral == false)
+            if (field.IsInitOnly)
+            {
+                SetValue = field.SetValue;
+            }
+            else if (field.IsLiteral == false)
             {
                 var v = Expression.Parameter(typeof(object), "v");
                 var val = Expression.Convert(v, FieldType);

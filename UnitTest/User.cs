@@ -1,4 +1,4 @@
-﻿namespace blqw.Serializable
+﻿namespace blqw
 {
     internal class User
     {

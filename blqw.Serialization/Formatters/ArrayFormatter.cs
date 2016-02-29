@@ -24,6 +24,11 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            if (serializationStream.ReadByte() == 0)
+            {
+                TraceDeserialize.WriteValue(null);
+                return null;
+            }
             TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
@@ -100,6 +105,12 @@ namespace blqw.Serialization.Formatters
 
         public override void Serialize(Stream serializationStream, object graph)
         {
+            if (graph == null)
+            {
+                serializationStream.WriteByte(0); //表示null
+                return;
+            }
+            serializationStream.WriteByte(1); //表示有值
             var array = (Array)graph;
             var type = graph.GetType().GetElementType();
             FormatterCache.StringFormatter.Serialize(serializationStream, type.AssemblyQualifiedName);

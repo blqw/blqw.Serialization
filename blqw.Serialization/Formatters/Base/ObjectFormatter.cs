@@ -77,7 +77,7 @@ namespace blqw.Serialization
                 return FormatterFragmentType.Object;
             }
         }
-
+        
         /// <summary>
         /// 反序列化所提供流中的数据并重新组成对象图形
         /// </summary>
@@ -85,6 +85,11 @@ namespace blqw.Serialization
         /// <returns></returns>
         public virtual object Deserialize(Stream serializationStream)
         {
+            if (serializationStream.ReadByte() == 0)
+            {
+                TraceDeserialize.WriteValue(null);
+                return null;
+            }
             TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
@@ -104,8 +109,8 @@ namespace blqw.Serialization
                     TraceDeserialize.WriteName("fieldName");
                     var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
                     var value = Serializer.Read(serializationStream);
+
                     var field = type.GetField(name, FLAGS);
-                    //field.SetValueDirect()
                     if (field != null)
                     {
                         var handler = FieldCache.Get(field);
@@ -125,6 +130,13 @@ namespace blqw.Serialization
         /// <param name="graph">要序列化的对象</param>
         public virtual void Serialize(Stream serializationStream, object graph)
         {
+            if (graph == null)
+            {
+                serializationStream.WriteByte(0); //表示null
+                return;
+            }
+            serializationStream.WriteByte(1); //表示有值
+
             var type = graph.GetType();
             FormatterCache.StringFormatter.Serialize(serializationStream, type.AssemblyQualifiedName);
 

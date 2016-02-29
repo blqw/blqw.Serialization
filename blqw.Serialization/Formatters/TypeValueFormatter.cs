@@ -48,10 +48,15 @@ namespace blqw.Serialization.Formatters
                     TraceDeserialize.WriteName("fieldName");
                     var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
                     var value = Serializer.Read(serializationStream);
+
                     var field = GetField(fields, i, name);
                     if (field != null)
                     {
                         field.SetValueDirect(refobj, value);
+                    }
+                    else
+                    {
+                        Serializer.Read(serializationStream);
                     }
                 }
                 type = type.BaseType;
