@@ -9,7 +9,7 @@
 * 元类型 格式器编码完成   
 * IntPtr,UIntPtr,Uri,NameValueCollection 格式器编码完成  
 * 正式更名为 blqw.Serialization (更贴近微软的命名方式)  
-* 老项目不再维护[blqw.Serializable](https://github.com/blqw/blqw.Serializable)  
+* 老项目[blqw.Serializable](https://github.com/blqw/blqw.Serializable)停止维护  
 
 #### 2016.02.29
 * 项目重构,现在有一种更好的序列化方案,性能+,兼容性+,序列化体积-,代码量-  
