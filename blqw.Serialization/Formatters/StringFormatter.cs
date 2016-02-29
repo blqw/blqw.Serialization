@@ -26,7 +26,9 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.SetWriting(false);
             var length = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+            TraceDeserialize.SetWriting(true);
             if (_Buffer == null)
             {
                 _Buffer = new StringBuilder();
@@ -44,6 +46,7 @@ namespace blqw.Serialization.Formatters
             }
             var str = _Buffer.ToString();
             //TODO:ReferencedCache.Add(str);
+            TraceDeserialize.WriteValue($"[{length}]{str}");
             return str;
         }
 
@@ -64,5 +67,6 @@ namespace blqw.Serialization.Formatters
                 }
             }
         }
+
     }
 }

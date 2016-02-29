@@ -23,7 +23,9 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
-            return (sbyte)serializationStream.ReadByte();
+            var i = (sbyte)serializationStream.ReadByte();
+            TraceDeserialize.WriteValue(i);
+            return i;
         }
 
         public override void Serialize(Stream serializationStream, object graph)

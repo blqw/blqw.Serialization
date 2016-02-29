@@ -24,6 +24,7 @@ namespace blqw.Serialization.Formatters
         public override object Deserialize(Stream serializationStream)
         {
             var refindex = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+            TraceDeserialize.WriteValue($">>ref[{refindex}]<<");
             return ReferencedCache.GetAt(refindex);
         }
 

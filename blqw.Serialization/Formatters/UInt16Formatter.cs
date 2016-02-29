@@ -41,6 +41,7 @@ namespace blqw.Serialization.Formatters
                 p[0] = (byte)serializationStream.ReadByte();
                 p[1] = (byte)serializationStream.ReadByte();
             }
+            TraceDeserialize.WriteValue(i);
             return i;
         }
     }

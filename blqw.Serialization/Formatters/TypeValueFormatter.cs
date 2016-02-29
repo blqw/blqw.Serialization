@@ -27,6 +27,7 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
             if (type == null)
@@ -39,10 +40,12 @@ namespace blqw.Serialization.Formatters
             var refobj = TypedReference.MakeTypedReference(obj, reftype.GetFields());
             while (!type.Equals(typeof(object)))
             {
+                TraceDeserialize.WriteName("fieldCount");
                 var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
                 var fields = type.GetFields(FLAGS);
                 for (int i = 0; i < count; i++)
                 {
+                    TraceDeserialize.WriteName("fieldName");
                     var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
                     var value = Serializer.Read(serializationStream);
                     var field = GetField(fields, i, name);

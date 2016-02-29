@@ -24,6 +24,7 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
             var value = Serializer.Read(serializationStream);

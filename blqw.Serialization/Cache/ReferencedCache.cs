@@ -20,6 +20,7 @@ namespace blqw.Serialization
         {
             if (Cache == null)
             {
+                TraceDeserialize.Reset();
                 return new ReferencedCacheContext();
             }
             return null;
@@ -85,6 +86,7 @@ namespace blqw.Serialization
                     Cache = new ArrayList();
                 }
                 Cache.Add(obj);
+                TraceDeserialize.WriteRef(Cache.Count - 1);
             }
         }
     }

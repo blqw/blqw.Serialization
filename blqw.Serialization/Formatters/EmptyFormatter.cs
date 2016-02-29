@@ -28,7 +28,7 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
-            return null;;
+            return null;
         }
 
     }

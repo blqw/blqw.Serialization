@@ -60,6 +60,10 @@ namespace blqw
         /// <returns></returns>
         public static byte[] GetBytes(object obj)
         {
+            if (obj == null)
+            {
+                return null;
+            }
             using (var stream = new MemoryStream(4096))
             {
                 Write(stream, obj);
@@ -80,6 +84,10 @@ namespace blqw
         /// <returns></returns>
         public static object GetObject(Byte[] bytes)
         {
+            if (bytes == null || bytes.Length == 0)
+            {
+                return null;
+            }
             using (var stream = new MemoryStream(4096))
             {
                 stream.Write(bytes, 0, bytes.Length);
@@ -104,7 +112,11 @@ namespace blqw
         {
             using (ReferencedCache.Context())
             {
+                TraceDeserialize.WriteName("flag");
+                TraceDeserialize.SetWriting(false);
                 var fragmentType = (FormatterFragmentType)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
+                TraceDeserialize.SetWriting(true);
+                TraceDeserialize.WriteValue(fragmentType.ToString());
                 var formatter = FormatterCache.GetFormatter(fragmentType);
                 return formatter.Deserialize(stream);
             }
@@ -174,5 +186,7 @@ namespace blqw
             }
             return GetObject(buffer);
         }
+
+
     }
 }

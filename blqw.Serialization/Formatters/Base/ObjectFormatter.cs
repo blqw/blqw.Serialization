@@ -77,7 +77,7 @@ namespace blqw.Serialization
                 return FormatterFragmentType.Object;
             }
         }
-        
+
         /// <summary>
         /// 反序列化所提供流中的数据并重新组成对象图形
         /// </summary>
@@ -85,6 +85,7 @@ namespace blqw.Serialization
         /// <returns></returns>
         public virtual object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
             if (type == null)
@@ -96,9 +97,11 @@ namespace blqw.Serialization
             ReferencedCache.Add(obj);
             while (!type.Equals(typeof(object)))
             {
+                TraceDeserialize.WriteName($"{type.Name}.fieldCount");
                 var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
                 for (int i = 0; i < count; i++)
                 {
+                    TraceDeserialize.WriteName("fieldName");
                     var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
                     var value = Serializer.Read(serializationStream);
                     var field = type.GetField(name, FLAGS);
@@ -110,7 +113,7 @@ namespace blqw.Serialization
                     }
                 }
                 type = type.BaseType;
-            } 
+            }
 
             return obj;
         }

@@ -24,6 +24,7 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
             if (type == null)
@@ -40,11 +41,13 @@ namespace blqw.Serialization.Formatters
             {
                 deserialize = Serializer.Read;
             }
+            TraceDeserialize.WriteName("rank");
             var rank = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
             Array array;
             //一维数组
             if (rank == 1)
             {
+                TraceDeserialize.WriteName("rank(0).length");
                 var length = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
                 array = Array.CreateInstance(type, length);
                 ReferencedCache.Add(array);
@@ -58,10 +61,11 @@ namespace blqw.Serialization.Formatters
             //多维数组
             for (int i = 0; i < rank; i++)
             {
+                TraceDeserialize.WriteName($"rank({i}).length");
                 indexes[i] = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
             }
             array = Array.CreateInstance(type, indexes);
-            Deserialize(serializationStream, array, 0, array.Rank-1, indexes, deserialize);
+            Deserialize(serializationStream, array, 0, array.Rank - 1, indexes, deserialize);
             return array;
         }
 
@@ -82,6 +86,7 @@ namespace blqw.Serialization.Formatters
                 for (int i = 0; i <= upperBound; i++)
                 {
                     indexes[currentRank] = i;
+                    TraceDeserialize.WriteName($"[{string.Join(",", indexes)}]");
                     array.SetValue(deserialize(serializationStream), indexes);
                 }
                 return;
@@ -108,7 +113,7 @@ namespace blqw.Serialization.Formatters
             {
                 serialize = Serializer.Write;
             }
-            
+
             FormatterCache.Int32Formatter.Serialize(serializationStream, array.Rank);
             if (array.Rank == 1)
             {
@@ -127,7 +132,7 @@ namespace blqw.Serialization.Formatters
                 FormatterCache.Int32Formatter.Serialize(serializationStream, array.GetUpperBound(i));
             }
             int[] indexes = new int[array.Rank];
-            Serialize(serializationStream, array, 0, array.Rank-1, indexes, serialize);
+            Serialize(serializationStream, array, 0, array.Rank - 1, indexes, serialize);
         }
 
         /// <summary>

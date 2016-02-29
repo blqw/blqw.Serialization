@@ -54,6 +54,12 @@
     <Compile Include="基础功能.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\blqw.Serialization\blqw.Serialization.csproj">
+      <Project>{f490fd47-f0eb-4be1-82b4-5f63af65cf24}</Project>
+      <Name>blqw.Serialization</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

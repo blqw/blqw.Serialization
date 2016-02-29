@@ -37,6 +37,7 @@ namespace blqw.Serialization.Formatters
             {
                 _Formatter = new BinaryFormatter();
             }
+            TraceDeserialize.WriteValue(">>BinaryFormatter<<");
             return _Formatter.Deserialize(serializationStream);
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using blqw.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -12,32 +13,35 @@ namespace blqw
     {
         static void Main(string[] args)
         {
-            while (true)
+
+            object obj;
+            try
             {
-                object obj;
-                try
-                {
-                    obj = null;
-                    obj.ToString();
-                }
-                catch (Exception ex)
-                {
-                    obj = ex;
-                }
-                try
-                {
-                    var bytes = Serializer.GetBytes(obj);
-                    var my2 = Serializer.GetObject(bytes);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(); 
-                }
+                obj = null;
+                obj.ToString();
             }
+            catch (Exception ex)
+            {
+                obj = ex;
+            }
+            try
+            {
+                var bytes = Serializer.GetBytes(obj);
+                var my2 = Serializer.GetObject(bytes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+            }
+            finally
+            {
+                Console.WriteLine(TraceDeserialize.LastDebug());
+            }
+
         }
-        
+
     }
-    
+
     class MyClass
     {
         public int ID { get; set; }
