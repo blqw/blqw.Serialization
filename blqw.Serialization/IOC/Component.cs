@@ -13,7 +13,7 @@ namespace blqw.SerializationComponent
     class Component
     {
 
-        public Component()
+        static Component()
         {
             MEFPart.Import(typeof(Component));
         }

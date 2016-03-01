@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace blqw.SerializationComponent
+namespace blqw
 {
     /// <summary>
     /// 用于执行MEF相关操作

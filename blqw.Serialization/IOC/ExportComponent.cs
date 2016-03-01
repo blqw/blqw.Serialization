@@ -14,7 +14,7 @@ namespace blqw.SerializationComponent
         [ExportMetadata("Priority", 100)]
         public static string SerializeToString(object input)
         {
-            return null;// Serializer.GetString(input);
+            return Serializer.GetString(input);
         }
 
         ///// <summary> 将数据序列化成字节流
@@ -32,7 +32,7 @@ namespace blqw.SerializationComponent
         [ExportMetadata("Priority", 100)]
         public static object DeserializeFromString(string input)
         {
-            return null;// Serializer.GetObject(input);
+            return Serializer.GetObject(input);
         }
 
         ///// <summary> 将字节流反序列化成对象
