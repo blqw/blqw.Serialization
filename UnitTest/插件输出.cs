@@ -49,7 +49,7 @@ namespace blqw
         [Import("SerializeToString")]
         public static readonly Func<object, string> GetString = o =>
         {
-            throw new NotImplementedException("需要Top.Serializable插件");
+            throw new NotImplementedException();
         };
 
 
@@ -58,7 +58,7 @@ namespace blqw
         [Import("SerializeToBytes")]
         public static readonly Func<object, byte[]> GetBytes = o =>
         {
-            throw new NotImplementedException("需要Top.Serializable插件");
+            throw new NotImplementedException();
         };
 
 
@@ -67,7 +67,7 @@ namespace blqw
         [Import("DeserializeFormBytes")]
         public static readonly Func<byte[], object> GetObject = o =>
         {
-            throw new NotImplementedException("需要Top.Serializable插件");
+            throw new NotImplementedException();
         };
 
 
@@ -76,7 +76,7 @@ namespace blqw
         [Import("DeserializeFromString")]
         public static readonly Func<string, object> GetObjectFormString = o =>
         {
-            throw new NotImplementedException("需要Top.Serializable插件");
+            throw new NotImplementedException();
         };
 
     }
