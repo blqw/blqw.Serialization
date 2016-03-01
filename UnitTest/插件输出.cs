@@ -71,7 +71,7 @@ namespace blqw
         };
 
 
-        /// <summary> 序列化
+        /// <summary> 反序列化
         /// </summary>
         [Import("DeserializeFromString")]
         public static readonly Func<string, object> GetObjectFormString = o =>
