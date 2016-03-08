@@ -85,6 +85,7 @@ namespace blqw.Serialization
         /// <returns></returns>
         public virtual object Deserialize(Stream serializationStream)
         {
+            TraceDeserialize.Write("(");
             if (serializationStream.ReadByte() == 0)
             {
                 TraceDeserialize.WriteValue(null);
@@ -120,6 +121,7 @@ namespace blqw.Serialization
                 type = type.BaseType;
             }
 
+            TraceDeserialize.Write(")");
             return obj;
         }
 

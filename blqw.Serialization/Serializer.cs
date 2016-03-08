@@ -11,6 +11,41 @@ namespace blqw
 {
     public static class Serializer
     {
+        static readonly byte[] HEAD = new byte[] { 77, 0, 78, 90 };
+
+        /// <summary>
+        /// 压缩字节的头标识
+        /// </summary>
+        public static byte[] Head
+        {
+            get
+            {
+                var head = new byte[HEAD.Length];
+                HEAD.CopyTo(head, 0);
+                return head;
+            }
+        }
+
+        /// <summary>
+        /// 验证数据的头标识
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static bool ValidationHead(byte[] data)
+        {
+            if (data == null || data.Length < HEAD.Length + 1)
+            {
+                return false;
+            }
+            for (int i = 0; i < HEAD.Length; i++)
+            {
+                if (data[i] != Head[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         /// <summary> 压缩数据
         /// </summary>
@@ -71,6 +106,7 @@ namespace blqw
                 stream.SetLength(0);
                 using (var gzip = new GZipStream(stream, CompressionMode.Compress))
                 {
+                    stream.Write(HEAD, 0, HEAD.Length); //写入头
                     gzip.Write(data, 0, data.Length);//将数据压缩并写到基础流中
                     gzip.Close();
                     return stream.ToArray();
@@ -88,10 +124,14 @@ namespace blqw
             {
                 return null;
             }
+            if (ValidationHead(bytes) == false)
+            {
+                throw new System.Runtime.Serialization.SerializationException("反序列化头必须为" + string.Join("-", HEAD.Select(it => it.ToString("X2").ToUpperInvariant())));
+            }
             using (var stream = new MemoryStream(4096))
             {
                 stream.Write(bytes, 0, bytes.Length);
-                stream.Position = 0;
+                stream.Position = HEAD.Length;
                 using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
                 {
                     bytes = ReadAll(gzip).ToArray();

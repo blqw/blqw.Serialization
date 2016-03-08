@@ -1,5 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace blqw
 {
@@ -52,5 +54,29 @@ namespace blqw
             Assert.AreEqual(obj.name, b.name);
             Assert.AreEqual(obj.ToString(), b.ToString());
         }
+
+        [TestMethod]
+        public void 组合对象()
+        {
+            Debug.Listeners.Add(new ConsoleTraceListener());
+            var obj = new {
+                id = 456,
+                property = new NameValueCollection()
+                {
+                    ["a"] = "1",
+                },
+                name = "blqw" };
+            var a = Serializer.GetBytes(obj);
+            dynamic b = Serializer.GetObject(a);
+            Assert.IsNotNull(b);
+            Assert.AreEqual(obj.id, b.id);
+            Assert.IsNotNull(b.property);
+            Assert.AreEqual(obj.property.Count, b.property.Count);
+            Assert.AreEqual(obj.property["a"], b.property["a"]);
+            Assert.AreEqual(obj.name, b.name);
+            Assert.AreEqual(obj.ToString(), b.ToString());
+        }
+
+
     }
 }

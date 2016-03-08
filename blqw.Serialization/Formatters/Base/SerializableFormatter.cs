@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -33,17 +34,35 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
-            if (serializationStream.ReadByte() == 0)
+            TraceDeserialize.Write("(");
+            var length = 0;
+            unsafe
+            {
+                var p = (byte*)&length;
+                p[0] = (byte)serializationStream.ReadByte();
+                p[1] = (byte)serializationStream.ReadByte();
+                p[2] = (byte)serializationStream.ReadByte();
+                p[3] = (byte)serializationStream.ReadByte();
+            }
+            Debug.WriteLine(length);
+            if (length == 0)
             {
                 TraceDeserialize.WriteValue(null);
                 return null;
             }
+            TraceDeserialize.WriteValue(length);
             if (_Formatter == null)
             {
                 _Formatter = new BinaryFormatter();
             }
             TraceDeserialize.WriteValue(">>BinaryFormatter<<");
-            return _Formatter.Deserialize(serializationStream);
+            TraceDeserialize.Write(")");
+            byte[] bytes = new byte[length];
+            serializationStream.Read(bytes, 0, length);
+            using (var stream = new MemoryStream(bytes))
+            {
+                return _Formatter.Deserialize(stream);
+            }
         }
 
         [ThreadStatic]
@@ -51,18 +70,38 @@ namespace blqw.Serialization.Formatters
 
         public override void Serialize(Stream serializationStream, object graph)
         {
+            var start = serializationStream.Position;
+            serializationStream.WriteByte(0);
+            serializationStream.WriteByte(0);
+            serializationStream.WriteByte(0);
+            serializationStream.WriteByte(0);
+
             if (graph == null)
             {
-                serializationStream.WriteByte(0); //表示null
+                Debug.WriteLine(0);
                 return;
             }
-            serializationStream.WriteByte(1); //表示有值
 
             if (_Formatter == null)
             {
                 _Formatter = new BinaryFormatter();
             }
+
             _Formatter.Serialize(serializationStream, graph);
+            var end = serializationStream.Position;
+
+            var length = end - start - 4;
+            serializationStream.Position = start;
+            Debug.WriteLine(length);
+            unsafe
+            {
+                var p = (byte*)&length;
+                serializationStream.WriteByte(p[0]);
+                serializationStream.WriteByte(p[1]);
+                serializationStream.WriteByte(p[2]);
+                serializationStream.WriteByte(p[3]);
+            }
+            serializationStream.Position = end;
         }
     }
 }

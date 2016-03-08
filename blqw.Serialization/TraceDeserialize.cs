@@ -65,5 +65,12 @@ namespace blqw.Serialization
         {
             _StopWirting = !writing;
         }
+
+        [Conditional("DEBUG")]
+        public static void Write(string str)
+        {
+            if (_StopWirting) return;
+            _Buffer.Append(str);
+        }
     }
 }

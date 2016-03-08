@@ -29,6 +29,7 @@ namespace blqw.Serialization.Formatters
                 TraceDeserialize.WriteValue(null);
                 return null;
             }
+            TraceDeserialize.Write("(");
             TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
@@ -60,6 +61,7 @@ namespace blqw.Serialization.Formatters
                 {
                     array.SetValue(deserialize(serializationStream), i);
                 }
+                TraceDeserialize.Write(")");
                 return array;
             }
             int[] indexes = new int[rank];
@@ -71,6 +73,8 @@ namespace blqw.Serialization.Formatters
             }
             array = Array.CreateInstance(type, indexes);
             Deserialize(serializationStream, array, 0, array.Rank - 1, indexes, deserialize);
+
+            TraceDeserialize.Write(")");
             return array;
         }
 

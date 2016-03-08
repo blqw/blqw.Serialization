@@ -27,6 +27,8 @@ namespace blqw.Serialization.Formatters
 
         public override object Deserialize(Stream serializationStream)
         {
+            serializationStream.ReadByte(); //值类型不存在null 所以第一个字节忽略
+            TraceDeserialize.Write("(");
             TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
@@ -62,6 +64,7 @@ namespace blqw.Serialization.Formatters
                 type = type.BaseType;
             }
 
+            TraceDeserialize.Write(")");
             return obj.GetService(null);
         }
 

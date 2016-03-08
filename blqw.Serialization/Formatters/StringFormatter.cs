@@ -32,6 +32,15 @@ namespace blqw.Serialization.Formatters
             }
         }
 
+        public override object Deserialize(Stream serializationStream)
+        {
+            TraceDeserialize.SetWriting(false);
+            var str = base.Deserialize(serializationStream);
+            TraceDeserialize.SetWriting(true);
+            TraceDeserialize.WriteValue(str);
+            return str;
+        }
+
         //public override object Deserialize(Stream serializationStream)
         //{
         //    TraceDeserialize.SetWriting(false);
