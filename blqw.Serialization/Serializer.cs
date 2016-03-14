@@ -37,9 +37,10 @@ namespace blqw
             {
                 return false;
             }
+            var offset = data[0] == 0 ? 1 : 0;
             for (int i = 0; i < HEAD.Length; i++)
             {
-                if (data[i] != Head[i])
+                if (data[i+ offset] != Head[i])
                 {
                     return false;
                 }
@@ -106,6 +107,7 @@ namespace blqw
                 stream.SetLength(0);
                 using (var gzip = new GZipStream(stream, CompressionMode.Compress))
                 {
+                    stream.WriteByte(0);
                     stream.Write(HEAD, 0, HEAD.Length); //写入头
                     gzip.Write(data, 0, data.Length);//将数据压缩并写到基础流中
                     gzip.Close();
@@ -132,6 +134,10 @@ namespace blqw
             {
                 stream.Write(bytes, 0, bytes.Length);
                 stream.Position = HEAD.Length;
+                if (bytes[0] == 0)
+                {
+                    stream.Position += 1;
+                }
                 using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
                 {
                     bytes = ReadAll(gzip).ToArray();
@@ -195,7 +201,7 @@ namespace blqw
                     {
                         return new string((char*)p, 0, length >> 1); //除以2;
                     }
-                    //gzip头固定为 [31,139] ,如果压缩后byte为基数,则忽略31
+                    //忽略头位的0
                     return new string((char*)(p + 1), 0, length >> 1);
                 }
             }
@@ -212,18 +218,8 @@ namespace blqw
                 return null;
             }
             var chars = str.ToCharArray();
-            byte[] buffer;
-            if ((chars[0] & 0xFF) == 139) //如果头为139
-            {
-                buffer = new byte[(str.Length << 1) + 1];
-                Buffer.BlockCopy(chars, 0, buffer, 1, buffer.Length - 1);
-                buffer[0] = (byte)31; //补全gzi压缩头 [31,139]
-            }
-            else
-            {
-                buffer = new byte[str.Length << 1];
-                Buffer.BlockCopy(chars, 0, buffer, 0, buffer.Length);
-            }
+            var buffer = new byte[str.Length << 1];
+            Buffer.BlockCopy(chars, 0, buffer, 0, buffer.Length);
             return GetObject(buffer);
         }
 

@@ -27,6 +27,10 @@ namespace blqw
             {
                 var bytes = Serializer.GetBytes(obj);
                 var my2 = Serializer.GetObject(bytes);
+
+
+                var bytes3 = Serializer.GetString(obj);
+                var my3 = Serializer.GetObject(bytes3);
             }
             catch (Exception ex)
             {
