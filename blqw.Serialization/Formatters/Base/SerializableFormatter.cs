@@ -44,7 +44,6 @@ namespace blqw.Serialization.Formatters
                 p[2] = (byte)serializationStream.ReadByte();
                 p[3] = (byte)serializationStream.ReadByte();
             }
-            Debug.WriteLine(length);
             if (length == 0)
             {
                 TraceDeserialize.WriteValue(null);
@@ -78,7 +77,6 @@ namespace blqw.Serialization.Formatters
 
             if (graph == null)
             {
-                Debug.WriteLine(0);
                 return;
             }
 
@@ -92,7 +90,6 @@ namespace blqw.Serialization.Formatters
 
             var length = end - start - 4;
             serializationStream.Position = start;
-            Debug.WriteLine(length);
             unsafe
             {
                 var p = (byte*)&length;
