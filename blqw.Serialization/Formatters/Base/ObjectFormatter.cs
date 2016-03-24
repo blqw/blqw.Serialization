@@ -77,7 +77,8 @@ namespace blqw.Serialization
                 return FormatterFragmentType.Object;
             }
         }
-        
+
+        static readonly Type ObejctType = typeof(object);
         /// <summary>
         /// 反序列化所提供流中的数据并重新组成对象图形
         /// </summary>
@@ -101,7 +102,7 @@ namespace blqw.Serialization
             }
             var obj = FormatterServices.GetUninitializedObject(type);//跳过构造函数创建对象
             ReferencedCache.Add(obj);
-            while (!type.Equals(typeof(object)))
+            while (!ObejctType.Equals(type ?? ObejctType))
             {
                 TraceDeserialize.WriteName($"{type.Name}.fieldCount");
                 var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
@@ -142,7 +143,7 @@ namespace blqw.Serialization
             var type = graph.GetType();
             FormatterCache.StringFormatter.Serialize(serializationStream, type.AssemblyQualifiedName);
 
-            while (!type.Equals(typeof(object)))
+            while (!ObejctType.Equals(type ?? ObejctType))
             {
                 var fields = FieldCache.GetByType(type);
                 FormatterCache.Int32Formatter.Serialize(serializationStream, fields.Length);

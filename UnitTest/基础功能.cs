@@ -59,13 +59,15 @@ namespace blqw
         public void 组合对象()
         {
             Debug.Listeners.Add(new ConsoleTraceListener());
-            var obj = new {
+            var obj = new
+            {
                 id = 456,
                 property = new NameValueCollection()
                 {
                     ["a"] = "1",
                 },
-                name = "blqw" };
+                name = "blqw"
+            };
             var a = Serializer.GetBytes(obj);
             dynamic b = Serializer.GetObject(a);
             Assert.IsNotNull(b);
@@ -75,6 +77,7 @@ namespace blqw
             Assert.AreEqual(obj.property["a"], b.property["a"]);
             Assert.AreEqual(obj.name, b.name);
             Assert.AreEqual(obj.ToString(), b.ToString());
+
         }
 
 
