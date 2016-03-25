@@ -86,29 +86,23 @@ namespace blqw.Serialization
         /// <returns></returns>
         public virtual object Deserialize(Stream serializationStream)
         {
-            TraceDeserialize.Write("(");
             if (serializationStream.ReadByte() == 0)
             {
-                TraceDeserialize.WriteValue(null);
                 return null;
             }
-            TraceDeserialize.WriteName("typeName");
             var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
             var type = Type.GetType(typeName, false);
             if (type == null)
             {
-                //TODO:以后处理
                 throw new SerializationException($"没有找到[{typeName}]类型");
             }
             var obj = FormatterServices.GetUninitializedObject(type);//跳过构造函数创建对象
             ReferencedCache.Add(obj);
             while (!ObejctType.Equals(type ?? ObejctType))
             {
-                TraceDeserialize.WriteName($"{type.Name}.fieldCount");
                 var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
                 for (int i = 0; i < count; i++)
                 {
-                    TraceDeserialize.WriteName("fieldName");
                     var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
                     var value = Serializer.Read(serializationStream);
 
@@ -121,8 +115,6 @@ namespace blqw.Serialization
                 }
                 type = type.BaseType;
             }
-
-            TraceDeserialize.Write(")");
             return obj;
         }
 

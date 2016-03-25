@@ -11,7 +11,7 @@ namespace blqw.Serialization.Formatters
     /// 提供 <see cref="NameValueCollection"/>对象的序列化和反序列化操作
     /// </summary>
     [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public sealed class NameValueCollectionFormatter : ObjectFormatter
+    public sealed class NameValueCollectionFormatter : SerializableFormatter
     {
         public override FormatterFragmentType FragmentType
         {
