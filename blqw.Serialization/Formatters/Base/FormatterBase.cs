@@ -41,5 +41,37 @@ namespace blqw.Serialization.Formatters
         /// <param name="serializationStream">格式化程序在其中放置序列化数据的流。 此流可以引用多种后备存储区（如文件、网络、内存等）。</param>
         /// <param name="graph">要序列化的对象或对象图形的根。 将自动序列化此根对象的所有子对象。</param>
         public abstract void Serialize(Stream serializationStream, object graph);
+
+
+
+
+        protected static readonly TypeBinder DefaultBinder = new TypeBinder();
+
+        /// <summary>
+        /// 序列化 <see cref="Type"/> 对象
+        /// </summary>
+        /// <param name="binder"></param>
+        /// <param name="serializationStream"></param>
+        /// <param name="type"></param>
+        protected void SerializeType(Stream serializationStream, Type type)
+        {
+            var binder = Binder ?? DefaultBinder;
+            string a, b;
+            binder.BindToName(type, out a, out b);
+            var stringFormatter = FormatterCache.GetStringFormatter(this);
+            stringFormatter.Serialize(serializationStream, a);
+            stringFormatter.Serialize(serializationStream, b);
+        }
+
+        protected Type DeserializeType(Stream serializationStream)
+        {
+            var binder = Binder ?? DefaultBinder;
+            TraceDeserialize.WriteName("typeName");
+            var stringFormatter = FormatterCache.GetStringFormatter(this);
+            var a = stringFormatter.Deserialize(serializationStream);
+            var b = stringFormatter.Deserialize(serializationStream);
+            TraceDeserialize.WriteValue($"{a}, {b}");
+            return binder.BindToType((string)a, (string)b);
+        }
     }
 }

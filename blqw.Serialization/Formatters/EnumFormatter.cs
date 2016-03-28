@@ -21,8 +21,8 @@ namespace blqw.Serialization.Formatters
         public override object Deserialize(Stream serializationStream)
         {
             TraceDeserialize.WriteName("typeName");
-            var type = Binder.DeserializeType(serializationStream);
-            var value = Serializer.Read(serializationStream);
+            var type = DeserializeType(serializationStream);
+            var value = Serializer.Read(serializationStream, this);
             if (type == null)
             {
                 return value;
@@ -33,8 +33,8 @@ namespace blqw.Serialization.Formatters
         public override void Serialize(Stream serializationStream, object graph)
         {
             var type = graph.GetType();
-            Binder.SerializeType(serializationStream, type);
-            Serializer.Write(serializationStream, Convert.ChangeType(graph, type.GetEnumUnderlyingType()));
+            SerializeType(serializationStream, type);
+            Serializer.Write(serializationStream, Convert.ChangeType(graph, type.GetEnumUnderlyingType()),this);
         }
 
     }

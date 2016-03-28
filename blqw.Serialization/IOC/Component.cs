@@ -107,5 +107,10 @@ namespace blqw.SerializationComponent
                 }
                 return null;
             };
+
+        /// <summary> 获取转换器
+        /// </summary>
+        [Import()]
+        public static readonly IFormatterConverter Converter = new FormatterConverter();
     }
 }

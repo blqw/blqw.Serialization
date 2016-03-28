@@ -24,7 +24,7 @@ namespace blqw.Serialization.Formatters
         {
             serializationStream.ReadByte(); //值类型不存在null 所以第一个字节忽略
             TraceDeserialize.Write("(");
-            var type = Binder.DeserializeType(serializationStream);
+            var type = DeserializeType(serializationStream);
             if (type == null)
             {
                 throw new SerializationException($"反序列化时出现错误 SerializationBinder 返回为null");
@@ -35,13 +35,13 @@ namespace blqw.Serialization.Formatters
             while (!type.Equals(typeof(object)))
             {
                 TraceDeserialize.WriteName("fieldCount");
-                var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+                var count = (int)FormatterCache.GetInt32Formatter(this).Deserialize(serializationStream);
                 var fields = type.GetFields(FLAGS);
                 for (int i = 0; i < count; i++)
                 {
                     TraceDeserialize.WriteName("fieldName");
-                    var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
-                    var value = Serializer.Read(serializationStream);
+                    var name = (string)FormatterCache.GetStringFormatter(this).Deserialize(serializationStream);
+                    var value = Serializer.Read(serializationStream, this);
 
                     var field = GetField(fields, i, name);
                     if (field != null)
@@ -50,7 +50,7 @@ namespace blqw.Serialization.Formatters
                     }
                     else
                     {
-                        Serializer.Read(serializationStream);
+                        Serializer.Read(serializationStream, this);
                     }
                 }
                 type = type.BaseType;

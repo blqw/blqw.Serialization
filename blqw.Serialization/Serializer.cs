@@ -1,4 +1,5 @@
 ﻿using blqw.Serialization;
+using blqw.SerializationComponent;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,42 +71,57 @@ namespace blqw
         /// <param name="stream"></param>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static void Write(Stream stream, object obj)
+        public static void Write(Stream stream, object obj, IFormatter previous = null)
+
         {
             using (ReferencedCache.Context())
             {
                 var refindex = ReferencedCache.AddOrGet(obj);
+                FormatterProvider provider;
                 if (refindex < 0)
                 {
-                    var formatter = FormatterCache.GetProvider(obj);
-                    FormatterCache.ByteFormatter.Serialize(stream, formatter.Flag); //写入片段类型标识
-                    formatter.Formatter.Serialize(stream, obj);
+                    provider = FormatterCache.GetProvider(obj);
                 }
                 else
                 {
-                    var formatter = FormatterCache.GetProvider(HeadFlag.Referenced);
-                    FormatterCache.ByteFormatter.Serialize(stream, formatter.Flag); //写入片段类型标识
-                    formatter.Formatter.Serialize(stream, refindex);
+                    obj = refindex;
+                    provider = FormatterCache.GetProvider(HeadFlag.Referenced);
                 }
+
+                if (previous?.SurrogateSelector != null)
+                {
+                    var type = obj.GetType();
+                    ISurrogateSelector selector;
+                    var surrogate = previous.SurrogateSelector.GetSurrogate(type, previous.Context, out selector);
+                    if (surrogate != null)
+                    {
+                        var data = new SerializationInfo(type, Component.Converter);
+                        surrogate.GetObjectData(obj, data, previous.Context);
+                        obj = data;
+                        provider = FormatterCache.GetProvider(HeadFlag.SerializationInfo);
+                    }
+                }
+
+                FormatterCache.GetByteFormatter(previous).Serialize(stream, provider.Flag);
+                provider.GetFormatter(previous).Serialize(stream, obj);
             }
         }
-
         /// <summary>
         /// 从流中读取数据,并反序列化为对象
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static object Read(Stream stream)
+        public static object Read(Stream stream, IFormatter previous = null)
         {
             using (ReferencedCache.Context())
             {
                 TraceDeserialize.WriteName("flag");
                 TraceDeserialize.SetWriting(false);
-                var fragmentType = (HeadFlag)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
+                var fragmentType = (HeadFlag)FormatterCache.GetByteFormatter(previous).Deserialize(stream); //读取片段类型标识
                 TraceDeserialize.SetWriting(true);
                 TraceDeserialize.WriteValue(fragmentType.ToString());
-                var formatter = FormatterCache.GetProvider(fragmentType);
-                return formatter.Formatter.Deserialize(stream);
+                var provider = FormatterCache.GetProvider(fragmentType);
+                return provider.GetFormatter(previous).Deserialize(stream);
             }
         }
 
@@ -113,7 +129,7 @@ namespace blqw
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static byte[] GetBytes(object obj)
+        public static byte[] GetBytes(object obj, FormatterArgs args = null)
         {
             if (obj == null)
             {
@@ -121,7 +137,7 @@ namespace blqw
             }
             using (var stream = new MemoryStream(4096))
             {
-                Write(stream, obj);
+                Write(stream, obj, args);
                 var data = stream.ToArray();
                 stream.SetLength(0);
                 using (var gzip = new GZipStream(stream, CompressionMode.Compress))
@@ -139,7 +155,7 @@ namespace blqw
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static object GetObject(byte[] bytes)
+        public static object GetObject(byte[] bytes, FormatterArgs args = null)
         {
             if (bytes == null || bytes.Length == 0)
             {
@@ -163,7 +179,7 @@ namespace blqw
                     stream.SetLength(0);
                     stream.Write(bytes, 0, bytes.Length);
                     stream.Position = 0;
-                    return Read(stream);
+                    return Read(stream, args);
                 }
             }
         }
@@ -189,11 +205,11 @@ namespace blqw
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string GetString(object obj)
+        public static string GetString(object obj, FormatterArgs args = null)
         {
             unsafe
             {
-                var buffer = GetBytes(obj);
+                var buffer = GetBytes(obj, args);
                 var length = buffer.Length;
                 fixed (byte* p = buffer)
                 {
@@ -211,7 +227,7 @@ namespace blqw
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static object GetObject(string str)
+        public static object GetObject(string str, FormatterArgs args = null)
         {
             if (str == null || str.Length == 0)
             {
@@ -220,7 +236,7 @@ namespace blqw
             var chars = str.ToCharArray();
             var buffer = new byte[str.Length << 1];
             Buffer.BlockCopy(chars, 0, buffer, 0, buffer.Length);
-            return GetObject(buffer);
+            return GetObject(buffer, args);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace blqw.Serialization.Formatters
             {
                 return null;
             }
-            var type = Binder.DeserializeType(serializationStream);
+            var type = DeserializeType(serializationStream);
             if (type == null)
             {
                 throw new SerializationException($"反序列化时出现错误 SerializationBinder 返回为null");
@@ -40,13 +40,15 @@ namespace blqw.Serialization.Formatters
             
             var obj = FormatterServices.GetUninitializedObject(type);//跳过构造函数创建对象
             ReferencedCache.Add(obj);
+            var stringFormatter = FormatterCache.GetStringFormatter(this);
+            var intFormatter = FormatterCache.GetInt32Formatter(this);
             while (!ObejctType.Equals(type ?? ObejctType))
             {
-                var count = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+                var count = (int)intFormatter.Deserialize(serializationStream);
                 for (int i = 0; i < count; i++)
                 {
-                    var name = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
-                    var value = Serializer.Read(serializationStream);
+                    var name = (string)stringFormatter.Deserialize(serializationStream);
+                    var value = Serializer.Read(serializationStream,this);
 
                     var field = type.GetField(name, FLAGS);
                     if (field != null)
@@ -75,16 +77,18 @@ namespace blqw.Serialization.Formatters
             serializationStream.WriteByte(1); //表示有值
 
             var type = graph.GetType();
-            Binder.SerializeType(serializationStream, type);
-            
+            SerializeType(serializationStream, type);
+
+            var stringFormatter = FormatterCache.GetStringFormatter(this);
+            var intFormatter = FormatterCache.GetInt32Formatter(this);
             while (!ObejctType.Equals(type ?? ObejctType))
             {
                 var fields = FieldCache.GetByType(type);
-                FormatterCache.Int32Formatter.Serialize(serializationStream, fields.Length);
+                intFormatter.Serialize(serializationStream, fields.Length);
                 foreach (var f in fields)
                 {
-                    FormatterCache.StringFormatter.Serialize(serializationStream, f.Name);
-                    Serializer.Write(serializationStream, f.GetValue(graph));
+                    stringFormatter.Serialize(serializationStream, f.Name);
+                    Serializer.Write(serializationStream, f.GetValue(graph),this);
                 }
                 type = type.BaseType;
             }

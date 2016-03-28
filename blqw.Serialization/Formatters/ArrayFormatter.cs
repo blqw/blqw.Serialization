@@ -25,8 +25,8 @@ namespace blqw.Serialization.Formatters
                 return null;
             }
             TraceDeserialize.Write("(");
-            
-            var type = Binder.DeserializeType(serializationStream); ;
+
+            var type = DeserializeType(serializationStream); ;
             if (type == null)
             {
                 throw new SerializationException($"反序列化时出现错误 SerializationBinder 返回为null");
@@ -35,20 +35,21 @@ namespace blqw.Serialization.Formatters
             Func<Stream, object> deserialize;
             if (type.IsValueType || type.IsSealed) //值类型或者密封类,不会有子类
             {
-                deserialize = FormatterCache.GetProvider(type).Formatter.Deserialize;
+                deserialize = FormatterCache.GetProvider(type).GetFormatter(this).Deserialize;
             }
             else
             {
-                deserialize = Serializer.Read;
+                deserialize = DeserializeAny;
             }
             TraceDeserialize.WriteName("rank");
-            var rank = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+            var intFormatter = FormatterCache.GetInt32Formatter(this);
+            var rank = (int)intFormatter.Deserialize(serializationStream);
             Array array;
             //一维数组
             if (rank == 1)
             {
                 TraceDeserialize.WriteName("rank(0).length");
-                var length = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+                var length = (int)intFormatter.Deserialize(serializationStream);
                 array = Array.CreateInstance(type, length);
                 ReferencedCache.Add(array);
                 for (int i = 0; i < length; i++)
@@ -63,7 +64,7 @@ namespace blqw.Serialization.Formatters
             for (int i = 0; i < rank; i++)
             {
                 TraceDeserialize.WriteName($"rank({i}).length");
-                indexes[i] = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+                indexes[i] = (int)intFormatter.Deserialize(serializationStream);
             }
             array = Array.CreateInstance(type, indexes);
             Deserialize(serializationStream, array, 0, array.Rank - 1, indexes, deserialize);
@@ -111,23 +112,24 @@ namespace blqw.Serialization.Formatters
             serializationStream.WriteByte(1); //表示有值
             var array = (Array)graph;
             var type = graph.GetType().GetElementType();
-            Binder.SerializeType(serializationStream, type);
+            SerializeType(serializationStream, type);
 
             Action<Stream, object> serialize;
             if (type.IsValueType || type.IsSealed) //值类型或者密封类,不会有子类
             {
-                serialize = FormatterCache.GetProvider(type).Formatter.Serialize;
+                serialize = FormatterCache.GetProvider(type).GetFormatter(this).Serialize;
             }
             else
             {
-                serialize = Serializer.Write;
+                serialize = SerializeAny;
             }
 
-            FormatterCache.Int32Formatter.Serialize(serializationStream, array.Rank);
+            var intFormatter = FormatterCache.GetInt32Formatter(this);
+            intFormatter.Serialize(serializationStream, array.Rank);
             if (array.Rank == 1)
             {
                 var length = array.Length;
-                FormatterCache.Int32Formatter.Serialize(serializationStream, length);
+                intFormatter.Serialize(serializationStream, length);
                 for (int i = 0; i < length; i++)
                 {
                     serialize(serializationStream, array.GetValue(i));
@@ -138,7 +140,7 @@ namespace blqw.Serialization.Formatters
             //多维数组
             for (int i = 0; i < array.Rank; i++)
             {
-                FormatterCache.Int32Formatter.Serialize(serializationStream, array.GetUpperBound(i));
+                intFormatter.Serialize(serializationStream, array.GetUpperBound(i));
             }
             int[] indexes = new int[array.Rank];
             Serialize(serializationStream, array, 0, array.Rank - 1, indexes, serialize);
@@ -170,6 +172,17 @@ namespace blqw.Serialization.Formatters
                 indexes[currentRank] = i;
                 Serialize(serializationStream, array, currentRank + 1, maxRank, indexes, serialize);
             }
+        }
+
+
+        private object DeserializeAny(Stream serializationStream)
+        {
+            return Serializer.Read(serializationStream, this);
+        }
+
+        private void SerializeAny(Stream serializationStream, object graph)
+        {
+            Serializer.Write(serializationStream, this);
         }
     }
 }

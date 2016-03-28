@@ -36,7 +36,7 @@ namespace blqw.Serialization
         IntPtr = 23,
         UIntPtr = 24,
         NameValueCollection = 25,
-
+        SerializationInfo = 26,
         /// <summary>
         /// 值类型
         /// </summary>

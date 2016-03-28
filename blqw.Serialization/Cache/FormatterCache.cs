@@ -102,35 +102,30 @@ namespace blqw.Serialization
         {
             return GetProvider(obj?.GetType());
         }
-
-        static IFormatter _Int32Formatter;
-        internal static IFormatter Int32Formatter
+        
+        static FormatterProvider _Int32FormatterProvider;
+        internal static IFormatter GetInt32Formatter(IFormatter previous)
         {
-            get
-            {
-                return _Int32Formatter ??
-                      (_Int32Formatter = GetProvider(HeadFlag.Int32).Formatter);
-            }
+            var provider = _Int32FormatterProvider ??
+                       (_Int32FormatterProvider = GetProvider(HeadFlag.Int32));
+            return provider.GetFormatter(previous);
         }
 
-        static IFormatter _ByteFormatter;
-        internal static IFormatter ByteFormatter
+
+        static FormatterProvider _ByteFormatterProvider;
+        internal static IFormatter GetByteFormatter(IFormatter previous)
         {
-            get
-            {
-                return  _ByteFormatter ??
-                       (_ByteFormatter = GetProvider(HeadFlag.Byte).Formatter);
-            }
+            var provider = _ByteFormatterProvider ??
+                       (_ByteFormatterProvider = GetProvider(HeadFlag.Byte));
+            return provider.GetFormatter(previous);
         }
 
-        static IFormatter _StringFormatter;
-        internal static IFormatter StringFormatter
+        static FormatterProvider _StringFormatterProvider;
+        internal static IFormatter GetStringFormatter(IFormatter previous)
         {
-            get
-            {
-                return  _StringFormatter ??
-                       (_StringFormatter = GetProvider(HeadFlag.String).Formatter);
-            }
+            var provider = _StringFormatterProvider ??
+                       (_StringFormatterProvider = GetProvider(HeadFlag.String));
+            return provider.GetFormatter(previous);
         }
     }
 }

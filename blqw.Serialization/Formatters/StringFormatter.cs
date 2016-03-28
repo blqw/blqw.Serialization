@@ -20,7 +20,7 @@ namespace blqw.Serialization.Formatters
         public override object Deserialize(Stream serializationStream)
         {
             TraceDeserialize.SetWriting(false);
-            var length = (int)FormatterCache.Int32Formatter.Deserialize(serializationStream);
+            var length = (int)FormatterCache.GetInt32Formatter(this).Deserialize(serializationStream);
             TraceDeserialize.SetWriting(true);
             if (length == 0)
             {
@@ -50,7 +50,7 @@ namespace blqw.Serialization.Formatters
         {
             var str = (string)graph;
             var length = str.Length << 1; // ×2 ,一个char = 2个byte
-            FormatterCache.Int32Formatter.Serialize(serializationStream, length);
+            FormatterCache.GetInt32Formatter(this).Serialize(serializationStream, length);
             if (length == 0)
             {
                 return;
