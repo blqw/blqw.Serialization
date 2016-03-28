@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,25 +12,11 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供 <see cref="TimeSpan"/>对象的序列化和反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public sealed class TimeSpanFormatter:ObjectFormatter
+    [Export(typeof(IFormatter))]
+    [ExportMetadata("BindType", typeof(TimeSpan))]
+    [ExportMetadata("HeadFlag", HeadFlag.TimeSpan)]
+    public sealed class TimeSpanFormatter:FormatterBase
     {
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                return FormatterFragmentType.TimeSpan;
-            }
-        }
-
-        public override Type BindType
-        {
-            get
-            {
-                return typeof(TimeSpan);
-            }
-        }
-
         public override object Deserialize(Stream serializationStream)
         {
             var i = new TimeSpan();

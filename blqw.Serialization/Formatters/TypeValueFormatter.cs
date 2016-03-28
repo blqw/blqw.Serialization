@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,30 +13,21 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供 值类型对象的序列化和反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
+    [Export(typeof(IFormatter))]
+    [ExportMetadata("BindType", typeof(ValueType))]
+    [ExportMetadata("HeadFlag", HeadFlag.ValueType)]
     public sealed class TypeValueFormatter : ObjectFormatter
     {
         private const BindingFlags FLAGS = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                return FormatterFragmentType.ValueType;
-            }
-        }
-
+        
         public override object Deserialize(Stream serializationStream)
         {
             serializationStream.ReadByte(); //值类型不存在null 所以第一个字节忽略
             TraceDeserialize.Write("(");
-            TraceDeserialize.WriteName("typeName");
-            var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
-            var type = Type.GetType(typeName, false);
+            var type = Binder.DeserializeType(serializationStream);
             if (type == null)
             {
-                //TODO:以后处理
-                throw new SerializationException($"没有找到[{typeName}]类型");
+                throw new SerializationException($"反序列化时出现错误 SerializationBinder 返回为null");
             }
             var reftype = typeof(TypeValueReference<>).MakeGenericType(type);
             var obj = (IServiceProvider)FormatterServices.GetUninitializedObject(reftype);

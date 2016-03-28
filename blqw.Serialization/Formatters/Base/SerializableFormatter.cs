@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,25 +14,8 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供 <see cref="ISerializable"/>对象的序列化和反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public abstract class SerializableFormatter : ObjectFormatter
+    public abstract class SerializableFormatter : FormatterBase
     {
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override Type BindType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public override object Deserialize(Stream serializationStream)
         {
             TraceDeserialize.Write("(");

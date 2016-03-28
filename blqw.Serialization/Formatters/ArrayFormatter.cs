@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -11,17 +12,11 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供数组对象的序列化和反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public sealed class ArrayFormatter : ObjectFormatter
+    [Export(typeof(IFormatter))]
+    [ExportMetadata("BindType", typeof(Array))]
+    [ExportMetadata("HeadFlag", HeadFlag.Array)]
+    public sealed class ArrayFormatter : FormatterBase
     {
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                return FormatterFragmentType.Array;
-            }
-        }
-
         public override object Deserialize(Stream serializationStream)
         {
             if (serializationStream.ReadByte() == 0)
@@ -30,18 +25,17 @@ namespace blqw.Serialization.Formatters
                 return null;
             }
             TraceDeserialize.Write("(");
-            TraceDeserialize.WriteName("typeName");
-            var typeName = (string)FormatterCache.StringFormatter.Deserialize(serializationStream);
-            var type = Type.GetType(typeName, false);
+            
+            var type = Binder.DeserializeType(serializationStream); ;
             if (type == null)
             {
-                throw new SerializationException($"数组类型[{typeName}]错误");
+                throw new SerializationException($"反序列化时出现错误 SerializationBinder 返回为null");
             }
 
             Func<Stream, object> deserialize;
             if (type.IsValueType || type.IsSealed) //值类型或者密封类,不会有子类
             {
-                deserialize = FormatterCache.GetFormatter(type).Deserialize;
+                deserialize = FormatterCache.GetProvider(type).Formatter.Deserialize;
             }
             else
             {
@@ -117,12 +111,12 @@ namespace blqw.Serialization.Formatters
             serializationStream.WriteByte(1); //表示有值
             var array = (Array)graph;
             var type = graph.GetType().GetElementType();
-            FormatterCache.StringFormatter.Serialize(serializationStream, type.AssemblyQualifiedName);
+            Binder.SerializeType(serializationStream, type);
 
             Action<Stream, object> serialize;
             if (type.IsValueType || type.IsSealed) //值类型或者密封类,不会有子类
             {
-                serialize = FormatterCache.GetFormatter(type).Serialize;
+                serialize = FormatterCache.GetProvider(type).Formatter.Serialize;
             }
             else
             {

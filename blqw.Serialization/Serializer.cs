@@ -4,13 +4,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace blqw
 {
-    public static class Serializer
+    public static partial class Serializer
     {
+        #region ThreadStatic
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="SerializationBinder"/>
+        /// </summary>
+        [ThreadStatic]
+        public static SerializationBinder CurrentBinder;
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="StreamingContext"/>
+        /// </summary>
+        [ThreadStatic]
+        public static StreamingContext CurrentContext;
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="ISurrogateSelector"/>
+        /// </summary>
+        [ThreadStatic]
+        public static ISurrogateSelector CurrentSurrogateSelector;
+        #endregion
+
         static readonly byte[] HEAD = new byte[] { 77, 0, 78, 90 };
 
         /// <summary>
@@ -40,7 +59,7 @@ namespace blqw
             var offset = data[0] == 0 ? 1 : 0;
             for (int i = 0; i < HEAD.Length; i++)
             {
-                if (data[i+ offset] != Head[i])
+                if (data[i + offset] != Head[i])
                 {
                     return false;
                 }
@@ -63,7 +82,6 @@ namespace blqw
             }
         }
 
-
         /// <summary>
         /// 将数据写入数据块
         /// </summary>
@@ -77,15 +95,15 @@ namespace blqw
                 var refindex = ReferencedCache.AddOrGet(obj);
                 if (refindex < 0)
                 {
-                    var formatter = FormatterCache.GetFormatter(obj);
-                    FormatterCache.ByteFormatter.Serialize(stream, formatter.FragmentType); //写入片段类型标识
-                    formatter.Serialize(stream, obj);
+                    var formatter = FormatterCache.GetProvider(obj);
+                    FormatterCache.ByteFormatter.Serialize(stream, formatter.Flag); //写入片段类型标识
+                    formatter.Formatter.Serialize(stream, obj);
                 }
                 else
                 {
-                    var formatter = FormatterCache.GetFormatter(FormatterFragmentType.Referenced);
-                    FormatterCache.ByteFormatter.Serialize(stream, formatter.FragmentType); //写入片段类型标识
-                    formatter.Serialize(stream, refindex);
+                    var formatter = FormatterCache.GetProvider(HeadFlag.Referenced);
+                    FormatterCache.ByteFormatter.Serialize(stream, formatter.Flag); //写入片段类型标识
+                    formatter.Formatter.Serialize(stream, refindex);
                 }
             }
         }
@@ -160,11 +178,11 @@ namespace blqw
             {
                 TraceDeserialize.WriteName("flag");
                 TraceDeserialize.SetWriting(false);
-                var fragmentType = (FormatterFragmentType)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
+                var fragmentType = (HeadFlag)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
                 TraceDeserialize.SetWriting(true);
                 TraceDeserialize.WriteValue(fragmentType.ToString());
-                var formatter = FormatterCache.GetFormatter(fragmentType);
-                return formatter.Deserialize(stream);
+                var formatter = FormatterCache.GetProvider(fragmentType);
+                return formatter.Formatter.Deserialize(stream);
             }
         }
 
@@ -222,7 +240,5 @@ namespace blqw
             Buffer.BlockCopy(chars, 0, buffer, 0, buffer.Length);
             return GetObject(buffer);
         }
-
-
     }
 }

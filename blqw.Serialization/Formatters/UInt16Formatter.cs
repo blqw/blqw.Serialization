@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,17 +12,11 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供 <see cref="ushort"/>对象的序列化和反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public sealed class UInt16Formatter : ObjectFormatter
+    [Export(typeof(IFormatter))]
+    [ExportMetadata("BindType", typeof(UInt16))]
+    [ExportMetadata("HeadFlag", HeadFlag.UInt16)]
+    public sealed class UInt16Formatter :FormatterBase
     {
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                return FormatterFragmentType.UInt16;
-            }
-        }
-
         public override void Serialize(Stream serializationStream, object graph)
         {
             var i = (ushort)graph;

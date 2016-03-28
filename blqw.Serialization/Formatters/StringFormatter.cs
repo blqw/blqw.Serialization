@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,25 +12,11 @@ namespace blqw.Serialization.Formatters
     /// <summary>
     /// 提供字符串对象序列化与反序列化操作
     /// </summary>
-    [System.ComponentModel.Composition.Export("ObjectFormatter", typeof(ObjectFormatter))]
-    public sealed class StringFormatter : ObjectFormatter
+    [Export(typeof(IFormatter))]
+    [ExportMetadata("BindType", typeof(String))]
+    [ExportMetadata("HeadFlag", HeadFlag.String)]
+    public sealed class StringFormatter :FormatterBase
     {
-        public override FormatterFragmentType FragmentType
-        {
-            get
-            {
-                return FormatterFragmentType.String;
-            }
-        }
-
-        public override Type BindType
-        {
-            get
-            {
-                return typeof(string);
-            }
-        }
-        
         public override object Deserialize(Stream serializationStream)
         {
             TraceDeserialize.SetWriting(false);

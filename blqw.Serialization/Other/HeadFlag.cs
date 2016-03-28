@@ -9,7 +9,7 @@ namespace blqw.Serialization
     /// <summary>
     /// 用于指示被格式化的数据片段的类型
     /// </summary>
-    public enum FormatterFragmentType : byte
+    public enum HeadFlag : byte
     {
         Empty = 0,
         Object = 1,
@@ -46,7 +46,7 @@ namespace blqw.Serialization
         /// </summary>
         Array = 253,
         /// <summary>
-        /// 类型
+        /// <see cref="System.Type"/>
         /// </summary>
         Type = 254,
         /// <summary>

@@ -5,40 +5,47 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace blqw.Serialization
 {
-    public static class FormatterCache
+    public class FormatterCache
     {
-        [ImportMany("ObjectFormatter")]
-        static readonly ObjectFormatter[] Cache = Init();
-
-        static readonly IDictionary BindTypes;
-
-        private static ObjectFormatter[] Init()
+        class MEFImports
         {
-            typeof(FormatterCache).GetField("BindTypes", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, new Dictionary<Type, ObjectFormatter>());
+            [ImportMany(typeof(IFormatter))]
+            public Lazy<IFormatter, IFormatterData>[] Formatters;
+        }
 
-            MEFPart.Import(typeof(FormatterCache));
-            var list = new ObjectFormatter[256];
+        static FormatterProvider[] Cache = Init();
 
-            foreach (var item in Cache)
+        static IDictionary BindTypes;
+
+        private static FormatterProvider[] Init()
+        {
+            var imports = new MEFImports();
+            MEFPart.Import(imports);
+            BindTypes = new Dictionary<Type, FormatterProvider>();
+            var providers = new FormatterProvider[256];
+
+            foreach (var item in imports.Formatters)
             {
-                list[(int)item.FragmentType] = item;
-                if (item.BindType != null)
+                var prov = new FormatterProvider(item.Value, item.Metadata);
+                providers[(int)item.Metadata.HeadFlag] = prov;
+                var bt = item.Metadata.BindType;
+                if (bt != typeof(object))
                 {
-                    var bt = item.BindType;
                     if (bt.IsGenericType && bt.IsGenericTypeDefinition)
                     {
                         throw new NotSupportedException($"{bt.AssemblyQualifiedName} 类型属性BindType有误(绑定类型不能是泛型定义类)");
                     }
-                    BindTypes.Add(bt, item);
+                    BindTypes.Add(bt, prov);
                 }
             }
 
-            return list;
+            return providers;
         }
 
         /// <summary>
@@ -46,13 +53,13 @@ namespace blqw.Serialization
         /// </summary>
         /// <param name="fragmentType">数据类型</param>
         /// <returns></returns>
-        public static ObjectFormatter GetFormatter(FormatterFragmentType fragmentType)
+        public static FormatterProvider GetProvider(HeadFlag fragmentType)
         {
             return Cache[(int)fragmentType];
         }
 
 
-        public static ObjectFormatter GetFormatter(Type type)
+        public static FormatterProvider GetProvider(Type type)
         {
             if (type == null)
             {
@@ -60,11 +67,11 @@ namespace blqw.Serialization
             }
             if (type.IsEnum)
             {
-                return Cache[(int)FormatterFragmentType.Enum];
+                return Cache[(int)HeadFlag.Enum];
             }
             if (type.IsArray)
             {
-                return Cache[(int)FormatterFragmentType.Array];
+                return Cache[(int)HeadFlag.Array];
             }
 
             var code = Type.GetTypeCode(type);
@@ -73,7 +80,7 @@ namespace blqw.Serialization
                 return Cache[(int)code];
             }
 
-            var formatter = (ObjectFormatter)BindTypes[type]; //尝试获取绑定类型的格式化器
+            var formatter = BindTypes[type] as FormatterProvider;
             if (formatter != null)
             {
                 return formatter;
@@ -81,9 +88,9 @@ namespace blqw.Serialization
 
             if (type.IsValueType)
             {
-                return Cache[(int)FormatterFragmentType.ValueType];
+                return Cache[(int)HeadFlag.ValueType];
             }
-            return Cache[(int)FormatterFragmentType.Object];
+            return Cache[(int)HeadFlag.Object];
         }
 
         /// <summary>
@@ -91,38 +98,38 @@ namespace blqw.Serialization
         /// </summary>
         /// <param name="obj">需要序列化的对象</param>
         /// <returns></returns>
-        public static ObjectFormatter GetFormatter(object obj)
+        public static FormatterProvider GetProvider(object obj)
         {
-            return GetFormatter(obj?.GetType());
+            return GetProvider(obj?.GetType());
         }
 
-        static ObjectFormatter _Int32Formatter;
-        internal static ObjectFormatter Int32Formatter
+        static IFormatter _Int32Formatter;
+        internal static IFormatter Int32Formatter
         {
             get
             {
                 return _Int32Formatter ??
-                    (_Int32Formatter = GetFormatter(FormatterFragmentType.Int32));
+                      (_Int32Formatter = GetProvider(HeadFlag.Int32).Formatter);
             }
         }
 
-        static ObjectFormatter _ByteFormatter;
-        internal static ObjectFormatter ByteFormatter
+        static IFormatter _ByteFormatter;
+        internal static IFormatter ByteFormatter
         {
             get
             {
-                return _ByteFormatter ??
-                    (_ByteFormatter = GetFormatter(FormatterFragmentType.Byte));
+                return  _ByteFormatter ??
+                       (_ByteFormatter = GetProvider(HeadFlag.Byte).Formatter);
             }
         }
 
-        static ObjectFormatter _StringFormatter;
-        internal static ObjectFormatter StringFormatter
+        static IFormatter _StringFormatter;
+        internal static IFormatter StringFormatter
         {
             get
             {
-                return _StringFormatter ??
-                    (_StringFormatter = GetFormatter(FormatterFragmentType.String));
+                return  _StringFormatter ??
+                       (_StringFormatter = GetProvider(HeadFlag.String).Formatter);
             }
         }
     }
