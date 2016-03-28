@@ -24,13 +24,22 @@ namespace blqw.Serialization.Formatters
         public StreamingContext Context { get; set; }
 
         /// <summary>
-        /// 获取或设置当前格式化程序所使用的 <see cref="SurrogateSelector"/>
+        /// 获取或设置当前格式化程序所使用的 <see cref="ISurrogateSelector"/>
         /// </summary>
         /// <remarks>周子鉴 2016.03.28</remarks>
-        [Obsolete("该字段在当前版本中无法设置")]
         public ISurrogateSelector SurrogateSelector { get; set; }
 
+        /// <summary>
+        /// 反序列化所提供流中的数据并重新组成对象图形。
+        /// </summary>
+        /// <param name="serializationStream">包含要反序列化的数据的流。</param>
+        /// <returns></returns>
         public abstract object Deserialize(Stream serializationStream);
+        /// <summary>
+        /// 将对象或具有给定根的对象图形序列化为所提供的流。
+        /// </summary>
+        /// <param name="serializationStream">格式化程序在其中放置序列化数据的流。 此流可以引用多种后备存储区（如文件、网络、内存等）。</param>
+        /// <param name="graph">要序列化的对象或对象图形的根。 将自动序列化此根对象的所有子对象。</param>
         public abstract void Serialize(Stream serializationStream, object graph);
     }
 }

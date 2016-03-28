@@ -11,8 +11,33 @@ namespace blqw
 {
     static partial class Serializer
     {
+        #region ThreadStatic
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="SerializationBinder"/>
+        /// </summary>
+        [ThreadStatic]
+        public static SerializationBinder CurrentBinder;
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="StreamingContext"/>
+        /// </summary>
+        [ThreadStatic]
+        public static StreamingContext CurrentContext;
+        /// <summary>
+        /// 当前上下文中使用的 <seealso cref="ISurrogateSelector"/>
+        /// </summary>
+        [ThreadStatic]
+        public static ISurrogateSelector CurrentSurrogateSelector;
+        #endregion
+
+
         static readonly TypeBinder DefaultBinder = new TypeBinder();
 
+        /// <summary>
+        /// 序列化 <see cref="Type"/> 对象
+        /// </summary>
+        /// <param name="binder"></param>
+        /// <param name="serializationStream"></param>
+        /// <param name="type"></param>
         public static void SerializeType(this SerializationBinder binder, Stream serializationStream, Type type)
         {
             if (binder == null)

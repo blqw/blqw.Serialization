@@ -12,24 +12,6 @@ namespace blqw
 {
     public static partial class Serializer
     {
-        #region ThreadStatic
-        /// <summary>
-        /// 当前上下文中使用的 <seealso cref="SerializationBinder"/>
-        /// </summary>
-        [ThreadStatic]
-        public static SerializationBinder CurrentBinder;
-        /// <summary>
-        /// 当前上下文中使用的 <seealso cref="StreamingContext"/>
-        /// </summary>
-        [ThreadStatic]
-        public static StreamingContext CurrentContext;
-        /// <summary>
-        /// 当前上下文中使用的 <seealso cref="ISurrogateSelector"/>
-        /// </summary>
-        [ThreadStatic]
-        public static ISurrogateSelector CurrentSurrogateSelector;
-        #endregion
-
         static readonly byte[] HEAD = new byte[] { 77, 0, 78, 90 };
 
         /// <summary>
@@ -108,6 +90,25 @@ namespace blqw
             }
         }
 
+        /// <summary>
+        /// 从流中读取数据,并反序列化为对象
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static object Read(Stream stream)
+        {
+            using (ReferencedCache.Context())
+            {
+                TraceDeserialize.WriteName("flag");
+                TraceDeserialize.SetWriting(false);
+                var fragmentType = (HeadFlag)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
+                TraceDeserialize.SetWriting(true);
+                TraceDeserialize.WriteValue(fragmentType.ToString());
+                var formatter = FormatterCache.GetProvider(fragmentType);
+                return formatter.Formatter.Deserialize(stream);
+            }
+        }
+
         /// <summary> 将对象序列化成字节流
         /// </summary>
         /// <param name="obj"></param>
@@ -138,7 +139,7 @@ namespace blqw
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static object GetObject(Byte[] bytes)
+        public static object GetObject(byte[] bytes)
         {
             if (bytes == null || bytes.Length == 0)
             {
@@ -146,7 +147,7 @@ namespace blqw
             }
             if (ValidationHead(bytes) == false)
             {
-                throw new System.Runtime.Serialization.SerializationException("反序列化头必须为" + string.Join("-", HEAD.Select(it => it.ToString("X2").ToUpperInvariant())));
+                throw new SerializationException("反序列化头必须为" + string.Join("-", HEAD.Select(it => it.ToString("X2").ToUpperInvariant())));
             }
             using (var stream = new MemoryStream(4096))
             {
@@ -164,25 +165,6 @@ namespace blqw
                     stream.Position = 0;
                     return Read(stream);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 从流中读取数据,并反序列化为对象
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        public static object Read(Stream stream)
-        {
-            using (ReferencedCache.Context())
-            {
-                TraceDeserialize.WriteName("flag");
-                TraceDeserialize.SetWriting(false);
-                var fragmentType = (HeadFlag)FormatterCache.ByteFormatter.Deserialize(stream); //读取片段类型标识
-                TraceDeserialize.SetWriting(true);
-                TraceDeserialize.WriteValue(fragmentType.ToString());
-                var formatter = FormatterCache.GetProvider(fragmentType);
-                return formatter.Formatter.Deserialize(stream);
             }
         }
 
