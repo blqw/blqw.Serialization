@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel.Composition;
 using System.Runtime.Serialization;
-using blqw.SerializationComponent;
+using blqw.IOC;
 
 namespace blqw.Serialization.Formatters
 {

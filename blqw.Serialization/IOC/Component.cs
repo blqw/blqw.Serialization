@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blqw.SerializationComponent
+namespace blqw.IOC
 {
     [Export("Component")]
     class Component
@@ -15,7 +15,7 @@ namespace blqw.SerializationComponent
 
         static Component()
         {
-            MEFPart.Import(typeof(Component));
+            MEFLite.Import(typeof(Component));
         }
 
         [Import("CreateGetter")]

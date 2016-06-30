@@ -49,6 +49,7 @@
     <Compile Include="Cache\ReferencedCache.cs" />
     <Compile Include="Formatters\DoubleFormatter.cs" />
     <Compile Include="Formatters\Base\FormatterBase.cs" />
+    <Compile Include="IOC\MEFLite.cs" />
     <Compile Include="Other\FormatterArgs.cs" />
     <Compile Include="Other\HeadFlag.cs" />
     <Compile Include="Formatters\ArrayFormatter.cs" />
@@ -80,7 +81,6 @@
     <Compile Include="IOC\Component.cs" />
     <Compile Include="IOC\ExportComponent.cs" />
     <Compile Include="IOC\InnerComverter.cs" />
-    <Compile Include="IOC\MEFPart.cs" />
     <Compile Include="Formatters\Base\ObjectFormatter.cs" />
     <Compile Include="Other\IFormatterData.cs" />
     <Compile Include="Other\FormatterProvider.cs" />
@@ -90,6 +90,11 @@
     <Compile Include="Serializer.cs" />
     <Compile Include="Formatters\TimeSpanFormatter.cs" />
     <Compile Include="Other\TraceDeserialize.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="blqw.Serialization.nuspec" />
+    <None Include="nuget-pack.bat" />
+    <None Include="update-ioc.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
