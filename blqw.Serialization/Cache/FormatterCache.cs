@@ -1,4 +1,4 @@
-﻿using blqw.SerializationComponent;
+﻿using blqw.IOC;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace blqw.Serialization
         private static FormatterProvider[] Init()
         {
             var imports = new MEFImports();
-            MEFPart.Import(imports);
+            MEFLite.Import(imports);
             BindTypes = new Dictionary<Type, FormatterProvider>();
             var providers = new FormatterProvider[256];
 

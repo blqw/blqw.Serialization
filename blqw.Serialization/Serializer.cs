@@ -1,5 +1,5 @@
 ﻿using blqw.Serialization;
-using blqw.SerializationComponent;
+using blqw.IOC;
 using System;
 using System.Collections.Generic;
 using System.IO;

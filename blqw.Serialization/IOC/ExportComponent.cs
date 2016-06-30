@@ -3,7 +3,7 @@ using System.ComponentModel.Composition;
 using System.Runtime.Serialization;
 using blqw.Serialization;
 
-namespace blqw.SerializationComponent
+namespace blqw.IOC
 {
 
     static class ExportComponent

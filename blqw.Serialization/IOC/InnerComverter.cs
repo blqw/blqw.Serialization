@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace blqw.SerializationComponent
+namespace blqw.IOC
 {
 
     class InnerComverter : FormatterConverter, IFormatterConverter
